@@ -1,3 +1,4 @@
+// COMPONENTS
 import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';

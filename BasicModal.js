@@ -1,3 +1,4 @@
+// COMPONENTS
 import React from 'react';
 import BasicModal from './components/BasicModal'; // Adjust the path if needed
 

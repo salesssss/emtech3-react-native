@@ -1,0 +1,42 @@
+/* Center the entire container in the middle of the screen */
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers items horizontally */
+  justify-content: center; /* Centers items vertically */
+  text-align: center; /* Ensures text is centered */
+  width: 100%; /* Makes sure it expands properly */
+}
+
+.text {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.sample-box {
+  background-color: rgb(71, 158, 216);
+  
+  padding: 10px;
+  margin: 10px 0;
+  text-align: center;
+  width: 220px;
+}
+
+.tap-button {
+  background-color: green;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  margin: 15px 0;
+  font-size: 16px;
+  border-radius: 5px;
+}

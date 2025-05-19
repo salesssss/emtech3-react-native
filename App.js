@@ -1,165 +1,161 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Container, List, ListItem, ListItemText, TextField, AppBar, Toolbar, IconButton, Typography, Modal } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Animated, TouchableOpacity } from 'react-native';
+import RegisterForm from './Register';
+import LoginForm from './login';
+import HomePage from './HomePage';
+import Exercise from './Exercise';
 
 
-// Modal Component
-const BasicModal = ({ open, handleClose, title, description, children }) => (
-    <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-    >
-        <Box
-            sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: 300,
-                bgcolor: 'background.paper',
-                borderRadius: 1,
-                boxShadow: 24,
-                p: 4,
-            }}
-        >
-            <Typography id="modal-title" variant="h6">
-                {title}
-            </Typography>
-            <Typography id="modal-description" sx={{ mt: 2 }}>
-                {description}
-            </Typography>
-            {children} {/*Added to render children components inside modal*/}
-        </Box>
-    </Modal>
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('home'); // home, register, login, homepage
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const [animateTransition, setAnimateTransition] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem('posturapp_current_user');
+    if (user) {
+      setCurrentScreen('homepage');
+    }
+  }, []);
+
+  const handleScreenChange = (target) => {
+    setAnimateTransition(true);
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setCurrentScreen(target);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setAnimateTransition(false));
+    });
+  };
+
+  const handleLoginSuccess = () => {
+    handleScreenChange('homepage');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('posturapp_current_user');
+    handleScreenChange('login');
+  };
+
+  return (
+    <View style={styles.container}>
+      <Animated.View style={{ opacity: fadeAnim, flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        {currentScreen === 'home' && (
+          <HomeScreen 
+            onRegister={() => handleScreenChange('register')} 
+            onLogin={() => handleScreenChange('login')} 
+          />
+        )}
+        {currentScreen === 'register' && (
+          <RegisterForm />
+        )}
+        {currentScreen === 'login' && (
+          <LoginForm onLoginSuccess={handleLoginSuccess} />
+        )}
+        {currentScreen === 'homepage' && (
+          <HomePage onLogout={handleLogout} />
+        )}
+      </Animated.View>
+    </View>
+  );
+}
+
+const HomeScreen = ({ onRegister, onLogin }) => (
+  <View style={styles.homeContainer}>
+    <Text style={styles.title}>POSTURAPP</Text>
+    <Text style={styles.tagline}>
+      Mobile application that aims to help our users practice a healthier lifestyle
+    </Text>
+    <AnimatedButton title="Sign up"onPress={onRegister} />
+    <AnimatedButton title="LOGIN" onPress={onLogin} />
+  </View>
 );
 
-// NavBar component
-const NavBar = ({ onUserIconClick }) => (
-    <AppBar position="static">
-        <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="user icon" onClick={onUserIconClick}>
-                <AccountCircleIcon />
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Goal List
-            </Typography>
-        </Toolbar>
-    </AppBar>
-);
+const AnimatedButton = ({ title, onPress }) => {
+  const bounceAnim = useRef(new Animated.Value(0)).current;
 
-// Main App component
-const App = () => {
-    const [goals, setGoals] = useState(['Learn React', 'Build a project', 'Study for exams']);
-    const [openWelcomeModal, setOpenWelcomeModal] = useState(false);
-    const [openWarningModal, setOpenWarningModal] = useState(false);
-    const [openDeleteModal, setOpenDeleteModal] = useState(false);
-    const [currentGoalToDelete, setCurrentGoalToDelete] = useState('');
-    const [newGoal, setNewGoal] = useState('');
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(bounceAnim, {
+        toValue: -20,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(bounceAnim, {
+        toValue: 5,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(bounceAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
-    // Effect to check for warning modal
-    useEffect(() => {
-        if (goals.length > 5) {
-            setOpenWarningModal(true);
-        }
-    }, [goals]);
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(bounceAnim, {
+        toValue: -10,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(bounceAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onPress && onPress();
+    });
+  };
 
-    const handleOpenWelcomeModal = () => {
-        setOpenWelcomeModal(true);
-    };
-
-    const handleCloseWelcomeModal = () => {
-        setOpenWelcomeModal(false);
-    };
-
-    const handleCloseWarningModal = () => {
-        setOpenWarningModal(false);
-    };
-
-    const handleCloseDeleteModal = () => {
-        setOpenDeleteModal(false);
-    };
-
-    const handleDeleteGoal = (goal) => {
-        setCurrentGoalToDelete(goal);
-        setOpenDeleteModal(true);
-    };
-
-    const confirmDeleteGoal = () => {
-        setGoals(goals.filter((item) => item !== currentGoalToDelete));
-        handleCloseDeleteModal();
-    };
-
-    const handleAddGoal = () => {
-        if (newGoal.trim() !== '') {
-            setGoals([...goals, newGoal]);
-            setNewGoal('');
-        } else {
-            alert("Please enter a valid task.");
-        }
-    };
-
-    return (
-        <Container>
-            <NavBar onUserIconClick={handleOpenWelcomeModal} />
-            <Box sx={{ my: 2 }}>
-                <TextField
-                    label="New Goal"
-                    variant="outlined"
-                    value={newGoal}
-                    onChange={(e) => setNewGoal(e.target.value)}
-                    sx={{ mr: 1 }}
-                />
-                <Button variant="contained" onClick={handleAddGoal}>
-                    Add Goal
-                </Button>
-            </Box>
-            <List>
-                {goals.map((goal, index) => (
-                    <ListItem key={index}>
-                        <ListItemText primary={goal} />
-                        <Button variant="outlined" onClick={() => handleDeleteGoal(goal)}>
-                            Delete
-                        </Button>
-                    </ListItem>
-                ))}
-            </List>
-
-            {/* Welcome Modal */}
-            <BasicModal
-                open={openWelcomeModal}
-                handleClose={handleCloseWelcomeModal}
-                title="Welcome!"
-                description="Welcome to your goal list application!"
-            />
-
-            {/* Warning Modal */}
-            <BasicModal
-                open={openWarningModal}
-                handleClose={handleCloseWarningModal}
-                title="Warning!"
-                description="You have more than 5 goals! Consider focusing on a few to avoid feeling overwhelmed."
-            />
-
-            {/* Delete Confirmation Modal */}
-            <BasicModal
-                open={openDeleteModal}
-                handleClose={handleCloseDeleteModal}
-                title="Confirm Deletion"
-                description={`Are you sure you want to delete "${currentGoalToDelete}"?`}
-            >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                    <Button variant="outlined" onClick={confirmDeleteGoal}>
-                        Yes
-                    </Button>
-                    <Button variant="outlined" onClick={handleCloseDeleteModal}>
-                        No
-                    </Button>
-                </Box>
-            </BasicModal>
-        </Container>
-    );
+  return (
+    <Animated.View style={{ transform: [{ translateY: bounceAnim }], marginTop: 20 }}>
+      <TouchableOpacity style={styles.button} onPress={handlePress}>
+        <Text style={styles.buttonText}>{title}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
 };
 
-export default App;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  homeContainer: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#007bff',
+    marginBottom: 10,
+  },
+  tagline: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 6,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});
